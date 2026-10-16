@@ -41,6 +41,17 @@ export function getRepoPath(relativePath?: string): string {
   return repoPath
 }
 
+export function getServerHostname(): string {
+  return new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com')
+    .hostname
+}
+
+export function getNoReplyEmail(login: string, id?: number | string): string {
+  return id
+    ? `${id}+${login}@users.noreply.${getServerHostname()}`
+    : `${login}@users.noreply.${getServerHostname()}`
+}
+
 export function getRemoteUrl(
   protocol: string,
   hostname: string,

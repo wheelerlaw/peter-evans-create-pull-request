@@ -23,13 +23,14 @@ inputs:
   committer:
     description: >
       The committer name and email address in the format `Display Name <email@address.com>`.
-      Defaults to the GitHub Actions bot user.
-    default: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+      Defaults to the GitHub Actions bot user, `github-actions[bot] <ID+github-actions[bot]@users.noreply.HOSTNAME>`,
+      where ID is 41898282 on github.com (looked up via the API on other hosts) and HOSTNAME is derived from `GITHUB_SERVER_URL`.
   author:
     description: >
       The author name and email address in the format `Display Name <email@address.com>`.
-      Defaults to the user who triggered the workflow run.
-    default: '${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>'
+      Defaults to the user who triggered the workflow run,
+      `${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.HOSTNAME>`,
+      where HOSTNAME is derived from `GITHUB_SERVER_URL`.
   signoff:
     description: 'Add `Signed-off-by` line by the committer at the end of the commit log message.'
     default: false

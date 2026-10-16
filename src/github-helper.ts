@@ -463,6 +463,20 @@ export class GitHubHelper {
     }
   }
 
+  async getUserId(login: string): Promise<number | undefined> {
+    try {
+      const {data} = await this.octokit.rest.users.getByUsername({
+        username: login
+      })
+      return data.id
+    } catch (error) {
+      core.warning(
+        `Failed to get the user ID for '${login}': ${utils.getErrorMessage(error)}`
+      )
+      return undefined
+    }
+  }
+
   async convertToDraft(id: string): Promise<void> {
     core.info(`Converting pull request to draft`)
     await this.octokit.graphql({
