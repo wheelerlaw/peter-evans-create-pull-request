@@ -24,7 +24,7 @@ inputs:
     description: >
       The committer name and email address in the format `Display Name <email@address.com>`.
       Defaults to the GitHub Actions bot user, `github-actions[bot] <ID+github-actions[bot]@users.noreply.HOSTNAME>`,
-      where ID is looked up via the API and HOSTNAME is derived from `GITHUB_SERVER_URL`.
+      where ID is 41898282 on github.com (looked up via the API on other hosts) and HOSTNAME is derived from `GITHUB_SERVER_URL`.
   author:
     description: >
       The author name and email address in the format `Display Name <email@address.com>`.

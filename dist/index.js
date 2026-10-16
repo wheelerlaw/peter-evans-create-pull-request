@@ -493,7 +493,9 @@ function createPullRequest(inputs) {
             core.startGroup('Configuring the committer and author');
             if (!inputs.committer) {
                 const botLogin = 'github-actions[bot]';
-                const botId = yield ghPull.getUserId(botLogin);
+                const botId = utils.getServerHostname() === 'github.com'
+                    ? 41898282
+                    : yield ghPull.getUserId(botLogin);
                 inputs.committer = `${botLogin} <${utils.getNoReplyEmail(botLogin, botId)}>`;
             }
             if (!inputs.author) {
