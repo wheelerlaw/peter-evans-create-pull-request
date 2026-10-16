@@ -491,6 +491,17 @@ function createPullRequest(inputs) {
             core.info(`Pull request branch to create or update set to '${inputs.branch}'`);
             // Configure the committer and author
             core.startGroup('Configuring the committer and author');
+            if (!inputs.committer) {
+                const botLogin = 'github-actions[bot]';
+                const botId = yield ghPull.getUserId(botLogin);
+                inputs.committer = `${botLogin} <${utils.getNoReplyEmail(botLogin, botId)}>`;
+            }
+            if (!inputs.author) {
+                const actor = process.env['GITHUB_ACTOR'];
+                inputs.author = actor
+                    ? `${actor} <${utils.getNoReplyEmail(actor, process.env['GITHUB_ACTOR_ID'])}>`
+                    : inputs.committer;
+            }
             const parsedAuthor = utils.parseDisplayNameEmail(inputs.author);
             const parsedCommitter = utils.parseDisplayNameEmail(inputs.committer);
             git.setIdentityGitOptions([
@@ -1656,6 +1667,20 @@ class GitHubHelper {
             }
         });
     }
+    getUserId(login) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { data } = yield this.octokit.rest.users.getByUsername({
+                    username: login
+                });
+                return data.id;
+            }
+            catch (error) {
+                core.warning(`Failed to get the user ID for '${login}': ${utils.getErrorMessage(error)}`);
+                return undefined;
+            }
+        });
+    }
     convertToDraft(id) {
         return __awaiter(this, void 0, void 0, function* () {
             core.info(`Converting pull request to draft`);
@@ -1926,6 +1951,8 @@ exports.getInputAsArray = getInputAsArray;
 exports.getStringAsArray = getStringAsArray;
 exports.stripOrgPrefixFromTeams = stripOrgPrefixFromTeams;
 exports.getRepoPath = getRepoPath;
+exports.getServerHostname = getServerHostname;
+exports.getNoReplyEmail = getNoReplyEmail;
 exports.getRemoteUrl = getRemoteUrl;
 exports.secondsSinceEpoch = secondsSinceEpoch;
 exports.randomString = randomString;
@@ -1967,6 +1994,15 @@ function getRepoPath(relativePath) {
         repoPath = path.resolve(repoPath, relativePath);
     core.debug(`repoPath: ${repoPath}`);
     return repoPath;
+}
+function getServerHostname() {
+    return new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com')
+        .hostname;
+}
+function getNoReplyEmail(login, id) {
+    return id
+        ? `${id}+${login}@users.noreply.${getServerHostname()}`
+        : `${login}@users.noreply.${getServerHostname()}`;
 }
 function getRemoteUrl(protocol, hostname, repository) {
     return protocol == 'HTTPS'

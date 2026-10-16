@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as utils from '../lib/utils'
 
 const originalGitHubWorkspace = process.env['GITHUB_WORKSPACE']
+const originalGitHubServerUrl = process.env['GITHUB_SERVER_URL']
 
 describe('utils tests', () => {
   beforeAll(() => {
@@ -15,6 +16,15 @@ describe('utils tests', () => {
     if (originalGitHubWorkspace) {
       process.env['GITHUB_WORKSPACE'] = originalGitHubWorkspace
     }
+    // Restore GitHub server URL
+    delete process.env['GITHUB_SERVER_URL']
+    if (originalGitHubServerUrl) {
+      process.env['GITHUB_SERVER_URL'] = originalGitHubServerUrl
+    }
+  })
+
+  afterEach(() => {
+    delete process.env['GITHUB_SERVER_URL']
   })
 
   test('getStringAsArray splits string input by newlines and commas', async () => {
@@ -35,6 +45,35 @@ describe('utils tests', () => {
     expect(array[0]).toEqual('team1')
     expect(array[1]).toEqual('team2')
     expect(array[2]).toEqual('team3')
+  })
+
+  test('getServerHostname returns the GitHub server hostname', async () => {
+    delete process.env['GITHUB_SERVER_URL']
+    expect(utils.getServerHostname()).toEqual('github.com')
+
+    process.env['GITHUB_SERVER_URL'] = 'https://ghes.example.com'
+    expect(utils.getServerHostname()).toEqual('ghes.example.com')
+
+    process.env['GITHUB_SERVER_URL'] = 'https://ghes.example.com:8443/'
+    expect(utils.getServerHostname()).toEqual('ghes.example.com')
+  })
+
+  test('getNoReplyEmail returns noreply email addresses', async () => {
+    delete process.env['GITHUB_SERVER_URL']
+    expect(utils.getNoReplyEmail('github-actions[bot]', 41898282)).toEqual(
+      '41898282+github-actions[bot]@users.noreply.github.com'
+    )
+    expect(utils.getNoReplyEmail('github-actions[bot]')).toEqual(
+      'github-actions[bot]@users.noreply.github.com'
+    )
+
+    process.env['GITHUB_SERVER_URL'] = 'https://ghes.example.com'
+    expect(utils.getNoReplyEmail('github-actions[bot]', 1)).toEqual(
+      '1+github-actions[bot]@users.noreply.ghes.example.com'
+    )
+    expect(utils.getNoReplyEmail('someuser', '42')).toEqual(
+      '42+someuser@users.noreply.ghes.example.com'
+    )
   })
 
   test('getRepoPath successfully returns the path to the repository', async () => {

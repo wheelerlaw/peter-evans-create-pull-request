@@ -168,6 +168,17 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
 
     // Configure the committer and author
     core.startGroup('Configuring the committer and author')
+    if (!inputs.committer) {
+      const botLogin = 'github-actions[bot]'
+      const botId = await ghPull.getUserId(botLogin)
+      inputs.committer = `${botLogin} <${utils.getNoReplyEmail(botLogin, botId)}>`
+    }
+    if (!inputs.author) {
+      const actor = process.env['GITHUB_ACTOR']
+      inputs.author = actor
+        ? `${actor} <${utils.getNoReplyEmail(actor, process.env['GITHUB_ACTOR_ID'])}>`
+        : inputs.committer
+    }
     const parsedAuthor = utils.parseDisplayNameEmail(inputs.author)
     const parsedCommitter = utils.parseDisplayNameEmail(inputs.committer)
     git.setIdentityGitOptions([
